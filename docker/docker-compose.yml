@@ -1,0 +1,132 @@
+version: '3.8'
+
+services:
+  # API服务
+  api:
+    build:
+      context: ../backend
+      dockerfile: ../docker/Dockerfile.backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../backend:/app
+      - upload_data:/app/uploads
+    depends_on:
+      - postgres
+      - mongodb
+      - elasticsearch
+      - redis
+      - rabbitmq
+    environment:
+      - POSTGRES_SERVER=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=finance_doc_classifier
+      - MONGODB_URL=mongodb://mongodb:27017/finance_docs
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - REDIS_URL=redis://redis:6379/0
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/%2F
+    networks:
+      - finance-net
+
+  # 工作进程
+  worker:
+    build:
+      context: ../backend
+      dockerfile: ../docker/Dockerfile.backend
+    command: python worker.py
+    volumes:
+      - ../backend:/app
+      - upload_data:/app/uploads
+    depends_on:
+      - rabbitmq
+    environment:
+      - POSTGRES_SERVER=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=finance_doc_classifier
+      - MONGODB_URL=mongodb://mongodb:27017/finance_docs
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - REDIS_URL=redis://redis:6379/0
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/%2F
+    networks:
+      - finance-net
+
+  # 前端
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: ../docker/Dockerfile.frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../frontend:/app
+    depends_on:
+      - api
+    networks:
+      - finance-net
+
+  # PostgreSQL数据库
+  postgres:
+    image: postgres:14
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=finance_doc_classifier
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - finance-net
+
+  # MongoDB数据库
+  mongodb:
+    image: mongo:5
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - finance-net
+
+  # Elasticsearch
+  elasticsearch:
+    image: elasticsearch:8.5.3
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - finance-net
+
+  # Redis
+  redis:
+    image: redis:6
+    ports:
+      - "6379:6379"
+    networks:
+      - finance-net
+
+  # RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - finance-net
+
+volumes:
+  postgres_data:
+  mongo_data:
+  elasticsearch_data:
+  upload_data:
+
+networks:
+  finance-net:
+    driver: bridge 

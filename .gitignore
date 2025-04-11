@@ -1,0 +1,37 @@
+# 忽略虚拟环境
+financial_doc_classifier_venv/
+
+# 忽略 Python 缓存文件
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 忽略前端依赖
+frontend/node_modules/
+frontend/.env
+
+# 忽略日志文件
+*.log
+
+# 忽略临时文件
+*.tmp
+*.bak
+
+# 忽略构建输出
+dist/
+build/
+
+# 忽略 Docker 构建缓存
+*.dockerignore
+
+# 忽略敏感信息
+.env
+*.env
+*.secret
+*.key
+*.pem
+
+# 忽略 IDE 配置文件
+.idea/
+.vscode/
