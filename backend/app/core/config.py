@@ -13,6 +13,17 @@ class Settings(BaseSettings):
     # CORS允许的源
     CORS_ORIGINS: List[AnyHttpUrl] = []
 
+    # 允许的主机列表，防止Host头攻击
+    ALLOWED_HOSTS: List[str] = ["*"]
+
+    # CSRF设置
+    CSRF_SECRET: str = secrets.token_urlsafe(32)
+    CSRF_COOKIE_SECURE: bool = os.getenv("CSRF_COOKIE_SECURE", "False").lower() == "true"
+    CSRF_COOKIE_HTTPONLY: bool = True
+
+    # 安全头配置
+    SECURITY_HEADERS: bool = os.getenv("SECURITY_HEADERS", "True").lower() == "true"
+
     @validator("CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
         if isinstance(v, str) and not v.startswith("["):
@@ -20,6 +31,12 @@ class Settings(BaseSettings):
         elif isinstance(v, (list, str)):
             return v
         raise ValueError(v)
+
+    @validator("ALLOWED_HOSTS", pre=True)
+    def assemble_allowed_hosts(cls, v: Union[str, List[str]]) -> List[str]:
+        if isinstance(v, str):
+            return [i.strip() for i in v.split(",")]
+        return v
 
     # PostgreSQL配置
     POSTGRES_SERVER: str = os.getenv("POSTGRES_SERVER", "localhost")

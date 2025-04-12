@@ -16,18 +16,21 @@
 - PostgreSQL存储结构化数据
 - MongoDB存储非结构化数据
 - Elasticsearch全文搜索
-- Redis缓存
+- Redis缓存和会话管理
 - RabbitMQ处理异步任务
+- Gunicorn作为WSGI服务器
 
 ### 机器学习
 - 文档解析：PyPDF2/pdfminer.six（PDF）、python-docx（DOCX）、BeautifulSoup（HTML）
 - 文本预处理：NLTK/spaCy
 - 特征提取：Scikit-learn的TF-IDF、Gensim的Word2Vec
 - 分类模型：Scikit-learn或TensorFlow/PyTorch
+- 并行处理：Joblib
 
 ### 前端
 - React.js构建单页应用
 - Material-UI组件库
+- Jest测试框架
 
 ## 安装说明
 
@@ -57,6 +60,7 @@ docker-compose exec api python initialize.py
 - API: http://localhost:8000
 - 前端: http://localhost:3000
 - API文档: http://localhost:8000/docs
+- ReDoc文档: http://localhost:8000/redoc
 
 ### 默认账户
 - 管理员: admin@example.com / admin123 (请在生产环境中更改)
@@ -67,6 +71,35 @@ docker-compose exec api python initialize.py
 3. 系统会自动处理文档并进行分类
 4. 使用搜索功能查找文档
 5. 查看分类结果和文档详情
+
+## 系统架构
+![系统架构图](docs/architecture.png)
+
+## 安全特性
+- **JWT认证**：使用JSON Web Token进行安全认证
+- **CSRF保护**：防止跨站请求伪造攻击
+- **安全HTTP头**：包括CSP, X-Content-Type-Options等
+- **密码哈希**：使用bcrypt进行密码哈希
+- **角色基础访问控制**：基于用户角色的访问权限控制
+- **输入验证**：严格的API输入验证和过滤
+- **容器安全**：使用非root用户运行容器
+
+## 性能优化
+- **机器学习优化**：
+  - 模型超参数调优
+  - 批量预测处理
+  - 特征提取缓存
+  - 预测结果缓存
+- **API性能**：
+  - 使用Gunicorn多工作进程
+  - 异步处理长任务
+  - 数据库连接池
+  - Redis缓存
+- **容器优化**：
+  - 资源限制设置
+  - 健康检查
+  - 优化的Docker镜像
+  - 自动重启策略
 
 ## 开发指南
 
@@ -97,8 +130,18 @@ npm install
 npm start
 ```
 
-## 系统架构
-![系统架构图](docs/architecture.png)
+### 运行测试
+1. 后端测试
+```bash
+cd backend
+pytest -v
+```
+
+2. 前端测试
+```bash
+cd frontend
+npm test
+```
 
 ## 文档
 - [API文档](http://localhost:8000/docs)
