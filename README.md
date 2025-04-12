@@ -41,7 +41,7 @@
 ### 安装步骤
 1. 克隆仓库
 ```bash
-git clone https://github.com/yourusername/finance-doc-classifier.git
+git clone https://github.com/kzlbj/finance-doc-classifier.git
 cd finance-doc-classifier
 ```
 
